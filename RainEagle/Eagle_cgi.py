@@ -1,6 +1,6 @@
 import os
-#import time
-#import xml.etree.ElementTree as ET
+# import time
+# import xml.etree.ElementTree as ET
 import urllib
 import urllib2
 import base64
@@ -10,8 +10,8 @@ from pprint import pprint
 
 __all__ = ['Eagle_cgi']
 
-class Eagle_cgi(object) :
 
+class Eagle_cgi(object):
     def __init__(self, **kwargs):
 
         self.macid = kwargs.get("mac", None)
@@ -19,58 +19,56 @@ class Eagle_cgi(object) :
         self.debug = kwargs.get("debug", 0)
 
         self.addr = kwargs.get("addr", os.getenv('EAGLE_ADDR', None))
-	self.cloudid = kwargs.get("cloudid", os.getenv('EAGLE_CLOUDID', None))
-	self.icode = kwargs.get("icode", os.getenv('EAGLE_ICODE', None))
+        self.cloudid = kwargs.get("cloudid", os.getenv('EAGLE_CLOUDID', None))
+        self.icode = kwargs.get("icode", os.getenv('EAGLE_ICODE', None))
 
-        if self.addr is None :
-	    if self.cloudid is None :
-		self.addr = "eagle-{0}.local".format(self.cloudid)
-	    else:
-		raise AssertionError("no hostname or IP given")
-
+        if self.addr is None:
+            if self.cloudid is None:
+                self.addr = "eagle-{0}.local".format(self.cloudid)
+            else:
+                raise AssertionError("no hostname or IP given")
 
         self.local_url = "http://{0}/cgi-bin/cgi_manager".format(self.addr)
 
         # preload
-        if self.macid is None :
-	    if self.cloudid is not None and self.icode is not None:
-		self.device_info = self.get_device_list()
-		if self.device_info is None :
-		    raise IOError("Error connecting")
-		if self.debug :
-		    print "__init__ ",
-		    print self.__class__.__name__, __name__
-		    pprint(self.device_info)
-		self.macid = self.device_info['device_mac_id[0]']
-		if self.debug :
-		    print "Init Web DeviceMacId = ", self.macid
+        if self.macid is None:
+            if self.cloudid is not None and self.icode is not None:
+                self.device_info = self.get_device_list()
+                if self.device_info is None:
+                    raise IOError("Error connecting")
+                if self.debug:
+                    print "__init__"
+                    print self.__class__.__name__, __name__
+                    pprint(self.device_info)
+                self.macid = self.device_info['device_mac_id[0]']
+                if self.debug:
+                    print "Init Web DeviceMacId = ", self.macid
 
-
-    def set_price_auto(self, macid=None) :
+    def set_price_auto(self, macid=None):
         """
             Set Price from Meter
 
             On Success returns dict with value :
                 'set_price_status':     'success'
         """
-	return( self._call_cgi("set_price",
-		    macid=macid,
-                    Price="0xFFFFFFFF",
-                    TrailingDigits="0x00"))
+        return (self._call_cgi("set_price",
+                               macid=macid,
+                               Price="0xFFFFFFFF",
+                               TrailingDigits="0x00"))
 
     # 5
 
-    def get_device_list(self) :
+    def get_device_list(self):
         """
             Send the LIST_DEVICES command
             returns information about the EAGLE device
 
         """
         comm_responce = self._send_http_comm("get_device_list")
-	print "get_device_list", comm_responce
+        print("get_device_list", comm_responce)
         return json.loads(comm_responce)
 
-    def get_uploaders(self, macid=None) :
+    def get_uploaders(self, macid=None):
         """
             gets list of uploaders for Web UI
 
@@ -84,7 +82,7 @@ class Eagle_cgi(object) :
         comm_responce = self._send_http_comm("get_uploaders", MacId=macid)
         return json.loads(comm_responce)
 
-    def get_uploader(self, macid=None) :
+    def get_uploader(self, macid=None):
         """
             gets current uploaders config
 
@@ -106,8 +104,7 @@ class Eagle_cgi(object) :
         comm_responce = self._send_http_comm("get_uploader", MacId=macid)
         return json.loads(comm_responce)
 
-
-    def set_message_read(self, macid=None) :
+    def set_message_read(self, macid=None):
         """
             On Success returns dict with the values :
                 'remote_management_status' :    'success'
@@ -116,15 +113,15 @@ class Eagle_cgi(object) :
         comm_responce = self._send_http_comm("set_message_read", MacId=macid)
         return json.loads(comm_responce)
 
-    def confirm_message(self, macid=None, id=None) :
+    def confirm_message(self, macid=None, id=None):
         """
         """
         id = _tohex(id)
         comm_responce = self._send_http_comm("confirm_message",
-                MacId=macid, Id=id)
+                                             MacId=macid, Id=id)
         return json.loads(comm_responce)
 
-    def get_message(self, macid=None) :
+    def get_message(self, macid=None):
         """
             On Success returns dict with the values (example):
                 "meter_status" :        "Connected"
@@ -141,46 +138,44 @@ class Eagle_cgi(object) :
         comm_responce = self._send_http_comm("get_message", MacId=macid)
         return json.loads(comm_responce)
 
-    def get_raw_data(self, macid=None, datatype="demand", period="day") :
-	"""
+    def get_raw_data(self, macid=None, datatype="demand", period="day"):
+        """
 
-            args:
-                datatype            demand|summation
-                period          day|week|month|year
+                args:
+                    datatype            demand|summation
+                    period          day|week|month|year
 
-            On Success returns CSV data
-	"""
-	fpath = self._call_cgi("get_raw_data", macid=macid, Type=datatype, Period=period)
-	if "raw_data_status" in fpath and fpath['raw_data_status'] == 'success' :
-	    print "raw_data_status :", fpath['raw_data_status'] 
-	    if "raw_data_filename" in fpath :
-		req_headers=dict()
-		print "raw_data_filename :", fpath['raw_data_filename'] 
+                On Success returns CSV data
+        """
+        fpath = self._call_cgi("get_raw_data", macid=macid, Type=datatype, Period=period)
+        if "raw_data_status" in fpath and fpath['raw_data_status'] == 'success':
+            print "raw_data_status :", fpath['raw_data_status']
+            if "raw_data_filename" in fpath:
+                req_headers = dict()
+                print "raw_data_filename :", fpath['raw_data_filename']
 
-		url = "http://{0}/csv/{1}".format(self.addr, fpath['raw_data_filename'])
+                url = "http://{0}/csv/{1}".format(self.addr, fpath['raw_data_filename'])
 
-		bauth = base64.b64encode( "{0}:{1}".format(self.cloudid, self.icode))
-		req_headers["Authorization"] =  "Basic {0}".format(bauth)
+                bauth = base64.b64encode("{0}:{1}".format(self.cloudid, self.icode))
+                req_headers["Authorization"] = "Basic {0}".format(bauth)
 
-		print "_send_http_comm: ", url, req_headers
+                print "_send_http_comm: ", url, req_headers
 
-		req = urllib2.Request(url, headers=req_headers)
+                req = urllib2.Request(url, headers=req_headers)
 
-		response = urllib2.urlopen(req, timeout=10)
-		the_page = response.read()
+                response = urllib2.urlopen(req, timeout=10)
+                the_page = response.read()
 
-		print "the_page = ", the_page
-
-
-	    else :
-		print "raw_data_filename NO ", fpath['raw_data_filename'] 
-
-	else :
-	    print "raw_data_status : no success", fpath
+                print "the_page = ", the_page
 
 
+            else:
+                print "raw_data_filename NO ", fpath['raw_data_filename']
 
-    def get_usage_data(self, macid=None) :
+        else:
+            print "raw_data_status : no success", fpath
+
+    def get_usage_data(self, macid=None):
         """
             Get current demand usage summation
 
@@ -209,8 +204,7 @@ class Eagle_cgi(object) :
         comm_responce = self._send_http_comm("get_usage_data", MacId=macid)
         return json.loads(comm_responce)
 
-
-    def get_historical_data(self, macid=None, period="day") :
+    def get_historical_data(self, macid=None, period="day"):
         """
             get a series of summation values over an interval of time
             ( http command api )
@@ -250,13 +244,12 @@ class Eagle_cgi(object) :
                 'value[13]'              '-0.870'
 
         """
-        if period not in ['day', 'week', 'month', 'year'] :
+        if period not in ['day', 'week', 'month', 'year']:
             raise ValueError("get_historical_data : period must be one of day|week|month|year")
         comm_responce = self._send_http_comm("get_historical_data", macid=macid, Period=period)
         return json.loads(comm_responce)
 
-
-    def get_setting_data(self, macid=None) :
+    def get_setting_data(self, macid=None):
         """
             get settings data
 
@@ -265,12 +258,12 @@ class Eagle_cgi(object) :
 
         """
         comm_responce = self._send_http_comm("get_setting_data", MacId=macid)
-	if comm_responce is None or len(comm_responce) == 0 :
-	    return(None)
-	else :
-	    return json.loads(comm_responce)
+        if comm_responce is None or len(comm_responce) == 0:
+            return (None)
+        else:
+            return json.loads(comm_responce)
 
-    def get_device_config(self, macid=None) :
+    def get_device_config(self, macid=None):
         """
             get remote management status
 
@@ -279,9 +272,9 @@ class Eagle_cgi(object) :
                'config_vpn_enabled':    'Y'
 
         """
-	return( self._call_cgi("get_device_config", macid=macid))
+        return self._call_cgi("get_device_config", macid=macid)
 
-    def get_gateway_info(self, macid=None) :
+    def get_gateway_info(self, macid=None):
         """
             gets network status
 
@@ -292,9 +285,9 @@ class Eagle_cgi(object) :
                 'gateway_mac_id':               'D8:D5:B9:00:90:24'
 
         """
-	return( self._call_cgi("get_gateway_info", macid=macid))
+        return self._call_cgi("get_gateway_info", macid=macid)
 
-    def get_timezone(self, macid=None) :
+    def get_timezone(self, macid=None):
         """
             get current timezone configuration
 
@@ -307,21 +300,21 @@ class Eagle_cgi(object) :
                'timezone_status':       'success'
 
         """
-	return( self._call_cgi("get_timezone", macid=macid))
+        return self._call_cgi("get_timezone", macid=macid)
 
-    def get_time_source(self, macid=None) :
+    def get_time_source(self, macid=None):
         """
             get time source for device
 
             On Success returns dict with value 'internet' or 'meter' :
                'time_source':           'internet'
         """
-	return( self._call_cgi("get_time_source", macid=macid))
+        return self._call_cgi("get_time_source", macid=macid)
 
-    def get_remote_management(self, macid=None) :
-	return( self._call_cgi("get_remote_management", macid=macid))
+    def get_remote_management(self, macid=None):
+        return self._call_cgi("get_remote_management", macid=macid)
 
-    def set_remote_management(self, macid=None, status="on") :
+    def set_remote_management(self, macid=None, status="on"):
         """ set_remote_management
             enabling ssh & vpn
 
@@ -332,14 +325,13 @@ class Eagle_cgi(object) :
                 'remote_management_status':     'success'
 
         """
-        if status not in ['on', 'off'] :
+        if status not in ['on', 'off']:
             raise ValueError("set_remote_management status must be 'on' or 'off'")
         comm_responce = self._send_http_comm("set_remote_management",
-                    MacId=macid, Status=status)
+                                             MacId=macid, Status=status)
         return json.loads(comm_responce)
 
-
-    def set_time_source(self, macid=None, source=None) :
+    def set_time_source(self, macid=None, source=None):
         """ set_time_source
             set time source
 
@@ -352,13 +344,13 @@ class Eagle_cgi(object) :
             On Error returns dict with value :
                 'set_time_source_status':       'invalid source name'
         """
-        if source not in ['meter', 'internet'] :
+        if source not in ['meter', 'internet']:
             raise ValueError("set_time_source Source must be 'meter' or 'internet'")
         comm_responce = self._send_http_comm("set_time_source",
-                    MacId=macid, Source=source)
+                                             MacId=macid, Source=source)
         return json.loads(comm_responce)
 
-    def get_price(self, macid=None) :
+    def get_price(self, macid=None):
         """
             get price for kWh
 
@@ -370,9 +362,9 @@ class Eagle_cgi(object) :
 
             returns empty dict on Error
         """
-	return( self._call_cgi("get_price", macid=macid))
+        return self._call_cgi("get_price", macid=macid)
 
-    def set_price(self, macid=None, price=None) :
+    def set_price(self, macid=None, price=None):
         """
             Set price manualy
 
@@ -383,17 +375,17 @@ class Eagle_cgi(object) :
                 'set_price_status':     'success'
 
         """
-        if isinstance(price, str) and price.startswith('$') :
+        if isinstance(price, str) and price.startswith('$'):
             price = float(price.lstrip('$'))
 
-        if not isinstance(price, (int, long, float)) :
+        if not isinstance(price, (int, long, float)):
             raise ValueError("set_price price arg must me a int, long or float")
-        if (price <= 0):
+        if price <= 0:
             raise ValueError("set_price price arg greater then 0")
 
-        trailing_digits     = 0
-        multiplier          = 1
-        while (((price * multiplier) != (floor(price * multiplier))) and (trailing_digits < 7)) :
+        trailing_digits = 0
+        multiplier = 1
+        while ((price * multiplier) != (floor(price * multiplier))) and (trailing_digits < 7):
             trailing_digits += 1
             multiplier *= 10
 
@@ -401,46 +393,43 @@ class Eagle_cgi(object) :
         tdigits = "{:#x}".format(trailing_digits)
 
         comm_responce = self._send_http_comm("set_price", MacId=macid,
-                        Price=price_adj, TrailingDigits=tdigits)
+                                             Price=price_adj, TrailingDigits=tdigits)
         return json.loads(comm_responce)
 
+    def get_price_blocks(self, macid=None):
+        return self._call_cgi("get_price_blocks", macid=macid)
 
-    def get_price_blocks(self, macid=None) :
-	return( self._call_cgi("get_price_blocks", macid=macid))
+    def get_auth(self, macid=None):
+        return self._call_cgi("get_auth", macid=macid)
 
-    def get_auth(self, macid=None) :
-	return( self._call_cgi("get_auth", macid=macid))
+    def get_update_state(self, macid=None):
+        return self._call_cgi("get_update_state", macid=macid)
 
-    def get_update_state(self, macid=None) :
-	return( self._call_cgi("get_update_state", macid=macid))
+    #    def set_multiplier_divisor(self, multiplier=1, divisor=1) :
+    #       """
+    #           set multiplier and divisor manualy
+    #       """
+    #       multiplier = _tohex(multiplier, 8)
+    #       divisor = _tohex(divisor, 8)
+    #        comm_responce = self._send_http_comm("set_multiplier_divisor", MacId=macid, Multiplier=multiplier, Divisor=divisor)
+    #        return json.loads(comm_responce)
 
-
-#    def set_multiplier_divisor(self, multiplier=1, divisor=1) :
-#       """
-#           set multiplier and divisor manualy
-#       """
-#       multiplier = _tohex(multiplier, 8)
-#       divisor = _tohex(divisor, 8)
-#        comm_responce = self._send_http_comm("set_multiplier_divisor", MacId=macid, Multiplier=multiplier, Divisor=divisor)
-#        return json.loads(comm_responce)
-
-    def factory_reset(self, macid=None) :
+    def factory_reset(self, macid=None):
         """
             Factory Reset
         """
         comm_responce = self._send_http_comm("factory_reset", MacId=macid)
         return json.loads(comm_responce)
 
+    #    def disconnect_meter(self, macid=None) :
+    #       """
+    #           disconnect from Smart Meter
+    #       """
+    #       comm_responce = self._send_http_comm("disconnect_meter", MacId=macid)
+    #       return json.loads(comm_responce)
 
-#    def disconnect_meter(self, macid=None) :
-#       """
-#           disconnect from Smart Meter
-#       """
-#       comm_responce = self._send_http_comm("disconnect_meter", MacId=macid)
-#       return json.loads(comm_responce)
 
-
-    def set_cloud(self, macid=None, url=None, authcode="", email="") :
+    def set_cloud(self, macid=None, url=None, authcode="", email=""):
         """
             set cloud Url
 
@@ -451,119 +440,115 @@ class Eagle_cgi(object) :
 
             See also get_uploader() to retrieve current uploader cloud config
         """
-        if url is None :
+        if url is None:
             raise ValueError("invalid url.\n")
 
-        if url.__len__() > 200 :
+        if url.__len__() > 200:
             raise ValueError("Max URL length is 200 characters long.\n")
 
         urlp = urlparse(url)
 
-        if urlp.port :
+        if urlp.port:
             port = "{:#04x}".format(urlp.port)
-        else :
+        else:
             port = "0x00"
 
         hostname = urlp.hostname
 
-        if urlp.scheme :
+        if urlp.scheme:
             protocol = urlp.scheme
-        else :
+        else:
             protocol = "http"
 
         url = urlp.path
 
-        if urlp.username :
+        if urlp.username:
             userid = urlp.username
-        else :
+        else:
             userid = ""
 
-        if urlp.password :
+        if urlp.password:
             password = urlp.password
-        else :
+        else:
             password = ""
 
         comm_responce = self._send_http_comm("set_cloud", MacId=macid,
-                    Provider="manual",
-                    Protocol=protocol, HostName=hostname,
-                    Url=url, Port=port,
-                    AuthCode=authcode, Email=email,
-                    UserId=userid, Password=password)
+                                             Provider="manual",
+                                             Protocol=protocol, HostName=hostname,
+                                             Url=url, Port=port,
+                                             AuthCode=authcode, Email=email,
+                                             UserId=userid, Password=password)
         return json.loads(comm_responce)
 
-
-
-    def get_reset_state(self, macid=None) :
+    def get_reset_state(self, macid=None):
         """
             get_reset_state : 
         """
-	return( self._call_cgi("get_reset_state", macid=macid))
+        return self._call_cgi("get_reset_state", macid=macid)
 
-    def cloud_reset(self, macid=None) :
+    def cloud_reset(self, macid=None):
         """
             cloud_reset : Clear Cloud Configuration
         """
         comm_responce = self._send_http_comm("cloud_reset", MacId=macid)
         return json.loads(comm_responce)
 
-
-    def _call_cgi(self, callname, macid=None,  **kwargs):
+    def _call_cgi(self, callname, macid=None, **kwargs):
         d = dict()
-        if macid is not None :
+        if macid is not None:
             d["MacId"] = macid
-	elif self.macid is not None :
+        elif self.macid is not None:
             d["MacId"] = self.macid
 
-	d.update(kwargs)
+        d.update(kwargs)
 
         comm_responce = self._send_http_comm(callname, **d)
         return json.loads(comm_responce)
 
     def _send_http_comm(self, cmd, **kwargs):
-	req_headers=dict()
+        req_headers = dict()
 
-        if self.debug :
+        if self.debug:
             print "\n\n_send_http_comm : ", cmd
             print "self.macid : ", self.macid
             print "kwargs : ", kwargs
 
-	url = self.local_url
+        url = self.local_url
 
-	macid = kwargs.get("MacId", None)
+        macid = kwargs.get("MacId", None)
 
         commstr = "<LocalCommand>\n"
         commstr += "<Name>{0!s}</Name>\n".format(cmd)
-	if macid is None :
-	    macid = self.macid
+        if macid is None:
+            macid = self.macid
 
-	if macid is not None :
-	    commstr += "<MacId>{0!s}</MacId>\n".format(macid)
-	    pass
-        for k, v in kwargs.items() :
-	    if k is "MacId" :
-		continue
+        if macid is not None:
+            commstr += "<MacId>{0!s}</MacId>\n".format(macid)
+            pass
+        for k, v in kwargs.items():
+            if k is "MacId":
+                continue
             commstr += "<{0}>{1!s}</{0}>\n".format(k, v)
         commstr += "</LocalCommand>\n"
 
-        if cmd == "set_cloud" :
+        if cmd == "set_cloud":
             print(commstr)
             return dict()
 
-        if self.debug :
+        if self.debug:
             print(commstr)
 
-        if self.cloudid is not None :
-	    bauth = base64.b64encode( "{0}:{1}".format(self.cloudid, self.icode))
-	    req_headers["Authorization"] =  "Basic {0}".format(bauth)
+        if self.cloudid is not None:
+            bauth = base64.b64encode("{0}:{1}".format(self.cloudid, self.icode))
+            req_headers["Authorization"] = "Basic {0}".format(bauth)
 
-	if self.debug :
-	    print "_send_http_comm: ", url, req_headers
-	    pass
+        if self.debug:
+            print "_send_http_comm: ", url, req_headers
+            pass
 
-	req = urllib2.Request(url, commstr, headers=req_headers)
+        req = urllib2.Request(url, commstr, headers=req_headers)
         response = urllib2.urlopen(req, timeout=10)
-	# print response.info()
+        # print response.info()
         the_page = response.read()
 
         return the_page
-
