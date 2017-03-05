@@ -3,6 +3,7 @@ import socket
 import sys
 import os
 import xml.etree.ElementTree as ET
+from RainEagle.Eagle_util import _et2d
 
 from pprint import pprint
 

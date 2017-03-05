@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 """
     A simple script get current meter values
 """
@@ -17,6 +17,7 @@ debug = 0
 
 
 def create_parser():
+    # ToDo: export EAGLE_ICODE=abababababababab or add argument to parser
     parser = argparse.ArgumentParser(
         description="print power meter status")
 

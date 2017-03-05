@@ -21,10 +21,11 @@ from distutils.version import LooseVersion
 from RainEagle.Eagle_util import to_epoch_2000, to_epoch_1970, _tohex, _twos_comp, _et2d
 from RainEagle.Eagle_cloud import Eagle_cloud
 from RainEagle.Eagle_cgi import Eagle_cgi
+from RainEagle.Eagle_soc import Eagle_soc
 
 min_fw_ver = "2.0.21"
 
-__all__ = ['RainEagleResponseError', 'Eagle', 'Eagle_cloud', 'Eagle_cgi', 'to_epoch_1970, to_epoch_2000']
+__all__ = ['RainEagleResponseError', 'Eagle', 'Eagle_cloud', 'Eagle_cgi', 'Eagle_soc', 'to_epoch_1970, to_epoch_2000']
 
 from pprint import pprint
 
@@ -45,7 +46,7 @@ class RainEagleResponseError(RuntimeError):
 #    pass
 
 
-class Eagle(Eagle_cloud, Eagle_cgi):
+class Eagle(Eagle_cloud, Eagle_cgi, Eagle_soc):
     """
         Class for talking to Rainforest Automation EAGLE (RFA-Z109)
 
@@ -65,6 +66,7 @@ class Eagle(Eagle_cloud, Eagle_cgi):
 
         Eagle_cgi.__init__(self, **kwargs)
         Eagle_cloud.__init__(self, **kwargs)
+        Eagle_soc.__init__(self, **kwargs)
 
         self.debug = kwargs.get("debug", 0)
 

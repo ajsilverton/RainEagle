@@ -18,10 +18,11 @@ from EagleClass import Eagle, RainEagleResponseError, Eagle_cloud, Eagle_cgi
 from RainEagle.Eagle_util import to_epoch_1970, to_epoch_2000
 from RainEagle.Eagle_cloud import Eagle_cloud
 from RainEagle.Eagle_cgi import Eagle_cgi
+from RainEagle.Eagle_soc import Eagle_soc
 
 # from RainEagle.EagleClass import Eagle
 
-__all__ = ['Eagle', 'Eagle_cloud', 'Eagle_cgi', 'RainEagleResponseError', 'to_epoch_1970', 'to_epoch_2000']
+__all__ = ['Eagle', 'Eagle_cloud', 'Eagle_cgi', 'Eagle_soc', 'RainEagleResponseError', 'to_epoch_1970', 'to_epoch_2000']
 
 if __name__ == "__main__":
     # import __main__
